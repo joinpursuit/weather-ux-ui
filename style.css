@@ -1,9 +1,9 @@
 :root {
-  --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --glass-bg: rgba(255, 255, 255, 0.1);
-  --glass-border: rgba(255, 255, 255, 0.2);
+  --bg-gradient: linear-gradient(135deg, #0f1724 0%, #1f2937 100%);
+  --glass-bg: rgba(0, 0, 0, 0.45);
+  --glass-border: rgba(255, 255, 255, 0.06);
   --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-secondary: rgba(255, 255, 255, 0.75);
   --accent-color: #ffd700;
   --font-family: 'Outfit', sans-serif;
 }
@@ -30,27 +30,27 @@ body {
 
 /* Functionality for dynamic backgrounds */
 body.bg-sunny {
-  background: linear-gradient(135deg, #56CCF2, #2F80ED);
+  background: linear-gradient(135deg, #2b5fa0, #163a6e);
 }
 
 body.bg-cloudy {
-  background: linear-gradient(135deg, #bdc3c7, #2c3e50);
+  background: linear-gradient(135deg, #8a9096, #12171b);
 }
 
 body.bg-rain {
-  background: linear-gradient(135deg, #4b6cb7, #182848);
+  background: linear-gradient(135deg, #203457, #071226);
 }
 
 body.bg-snow {
-  background: linear-gradient(135deg, #83a4d4, #b6fbff);
+  background: linear-gradient(135deg, #55738f, #386077);
 }
 
 body.bg-fog {
-  background: linear-gradient(135deg, #3e5151, #decba4);
+  background: linear-gradient(135deg, #2e3a3b, #1a1f20);
 }
 
 body.bg-night {
-  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  background: linear-gradient(135deg, #05070a, #0b1220, #151825);
 }
 
 /* Cloud Animation */
@@ -90,14 +90,13 @@ body.bg-night {
 #app {
   width: 100%;
   max-width: 480px;
-  background: rgba(0, 0, 0, 0.2);
-  /* Slightly more transparent for dynamic bg visibility */
+  background: var(--glass-bg);
 
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
   border-radius: 30px;
   border: 1px solid var(--glass-border);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.6);
   padding: 30px;
   animation: fadeIn 0.8s ease-out;
   position: relative;
@@ -229,18 +228,18 @@ body.bg-night {
 }
 
 .weather-status h2 {
-  font-size: 20.4px;
+  font-size: 18.6px;
   font-weight: 400;
-  margin-bottom: 2px;
+  margin-bottom: 0px;
   text-transform: capitalize;
 }
 
 .high-low {
-  font-size: 20px;
+  font-size: 18px;
   color: var(--text-secondary);
   display: flex;
   justify-content: center;
-  gap: 25px;
+  gap: 8px;
 }
 
 /* Weather Alert */
@@ -296,10 +295,10 @@ body.bg-night {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 2px;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 6px 8px;
   border-radius: 12px;
-  border: 1px solid var(--glass-border);
+  border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .hourly-time {
@@ -327,15 +326,15 @@ body.bg-night {
   align-items: center;
   justify-content: space-between;
   padding: 12px 15px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.38);
   border-radius: 15px;
-  border: 1px solid var(--glass-border);
+  border: 1px solid rgba(255, 255, 255, 0.04);
   transition: transform 0.2s;
 }
 
 .daily-item:hover {
   transform: scale(1.02);
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.32);
 }
 
 .day-name {

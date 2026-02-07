@@ -331,15 +331,17 @@ function renderWeather(data) {
 
     const timeStr = data.hourly.time[i];
     const date = parseISO(timeStr);
-    const hourFormatted = format(date, 'h a');
-    const temp = getTemp(data.hourly.temperature_2m[i]);
-    const isDayHourly = data.hourly.is_day[i];
-    const iconName = getWeatherIcon(data.hourly.weather_code[i], isDayHourly);
+    // Label the first item as "Now" and use current conditions for that slot
+    const isNowSlot = (i === startIndex);
+    const hourLabel = isNowSlot ? 'Now' : format(date, 'h a');
+    const temp = getTemp(isNowSlot ? current.temperature_2m : data.hourly.temperature_2m[i]);
+    const isDayHourly = isNowSlot ? current.is_day : data.hourly.is_day[i];
+    const iconName = getWeatherIcon(isNowSlot ? current.weather_code : data.hourly.weather_code[i], isDayHourly);
 
     const el = document.createElement('div');
     el.className = 'hourly-item';
     el.innerHTML = `
-      <span class="hourly-time">${hourFormatted}</span>
+      <span class="hourly-time">${hourLabel}</span>
       <i data-lucide="${iconName}" width="24" height="24"></i>
       <span class="hourly-temp">${temp}°</span>
     `;
@@ -355,7 +357,7 @@ function renderWeather(data) {
 
     const dateStr = data.daily.time[i];
     const date = parseISO(dateStr);
-    const dayName = format(date, 'EEE');
+    const dayName = (i === 1) ? 'Today' : format(date, 'EEE');
 
     const min = getTemp(data.daily.temperature_2m_min[i]);
     const max = getTemp(data.daily.temperature_2m_max[i]);
