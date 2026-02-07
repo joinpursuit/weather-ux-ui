@@ -3,21 +3,9 @@ import { createIcons, CloudSun, Sun, CloudRain, CloudSnow, CloudFog, Cloud, Clou
 import { format, parseISO, addDays } from 'date-fns';
 
 // Icon mapping based on WMO codes
-const getWeatherIcon = (code) => {
-  // WMO Weather interpretation codes (WW)
-  // 0: Clear sky
-  // 1, 2, 3: Mainly clear, partly cloudy, and overcast
-  // 45, 48: Fog and depositing rime fog
-  // 51, 53, 55: Drizzle: Light, moderate, and dense intensity
-  // 56, 57: Freezing Drizzle: Light and dense intensity
-  // 61, 63, 65: Rain: Slight, moderate and heavy intensity
-  // 66, 67: Freezing Rain: Light and heavy intensity
-  // 71, 73, 75: Snow fall: Slight, moderate, and heavy intensity
-  // 77: Snow grains
-  // 80, 81, 82: Rain showers: Slight, moderate, and violent
-  // 85, 86: Snow showers slight and heavy
-  // 95 *: Thunderstorm: Slight or moderate
-  // 96, 99 *: Thunderstorm with slight and heavy hail
+const getWeatherIcon = (code, isDay) => {
+  // If night and clear/partly cloudy, show moon
+  if (isDay === 0 && (code === 0 || code === 1 || code === 2)) return 'moon';
 
   if (code === 0) return 'sun';
   if (code >= 1 && code <= 3) return 'cloud-sun';
@@ -73,20 +61,163 @@ const initIcons = () => {
   });
 };
 
-async function fetchWeather() {
+function updateBackground(code, isDay) {
+  const body = document.body;
+  body.className = ''; // Reset classes
+
+  // Check if night
+  if (isDay === 0) {
+    body.classList.add('bg-night');
+    return;
+  }
+
+  // Day time mapping
+  if (code === 0 || code === 1) body.classList.add('bg-sunny');
+  else if (code <= 3) body.classList.add('bg-cloudy');
+  else if (code <= 48) body.classList.add('bg-fog');
+  else if (code <= 67 || code >= 80) {
+    body.classList.add('bg-rain');
+    // Add extra clouds for rain
+    addClouds(10);
+  }
+  else if (code <= 77 || code === 85 || code === 86) body.classList.add('bg-snow');
+  else if (code >= 95) body.classList.add('bg-rain'); // Thunderstorm
+  else body.classList.add('bg-cloudy');
+}
+
+
+function addClouds(count = 6) {
+  const container = document.getElementById('cloud-container');
+  // Clear existing if any (optional, but good for reset)
+  container.innerHTML = '';
+
+  for (let i = 0; i < count; i++) {
+    const cloud = document.createElement('div');
+    cloud.classList.add('cloud');
+
+    // Randomize properties for "gas" look
+    const top = Math.random() * 60; // Spread vertically more
+    const duration = 40 + Math.random() * 40; // Slower: 40s - 80s
+    const delay = Math.random() * -50;
+
+    // Make them much wider than tall for "stratus" or gas layers
+    const width = 300 + Math.random() * 300; // 300px - 600px wide
+    const height = 100 + Math.random() * 100; // 100px - 200px tall
+    const opacity = 0.2 + Math.random() * 0.3; // Lower opacity for gas effect
+
+    cloud.style.top = `${top}%`;
+    cloud.style.animationDuration = `${duration}s`;
+    cloud.style.animationDelay = `${delay}s`;
+    cloud.style.width = `${width}px`;
+    cloud.style.height = `${height}px`;
+    cloud.style.opacity = opacity;
+
+    container.appendChild(cloud);
+  }
+}
+
+
+
+let currentUnit = 'C'; // 'C' or 'F'
+let weatherData = null; // Store fetched data
+
+function toF(celsius) {
+  return (celsius * 9 / 5) + 32;
+}
+
+function getTemp(celsius) {
+  if (currentUnit === 'F') {
+    return Math.round(toF(celsius));
+  }
+  return Math.round(celsius);
+}
+
+function updateUnitUI() {
+  const btnC = document.getElementById('btn-c');
+  const btnF = document.getElementById('btn-f');
+  if (currentUnit === 'C') {
+    btnC.classList.add('active');
+    btnF.classList.remove('active');
+  } else {
+    btnC.classList.remove('active');
+    btnF.classList.add('active');
+  }
+
+  // Re-render if data exists
+  if (weatherData) {
+    renderWeather(weatherData);
+  }
+}
+
+// Event Listeners for Unit Toggle
+document.getElementById('btn-c').addEventListener('click', () => {
+  if (currentUnit !== 'C') {
+    currentUnit = 'C';
+    updateUnitUI();
+  }
+});
+
+document.getElementById('btn-f').addEventListener('click', () => {
+  if (currentUnit !== 'F') {
+    currentUnit = 'F';
+    updateUnitUI();
+  }
+});
+
+
+async function fetchCity(lat, lon) {
   try {
-    // Defaulting to New York for demo if geolocation fails or is denied.
-    // In a real app, we'd ask for position first. 
-    // Let's try to get position, with a fallback.
-    let lat = 40.7128;
+    const url = `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&count=1&language=en&format=json`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.results && data.results.length > 0) {
+      const location = data.results[0];
+      // Prefer city, then town, then village, then just name
+      const name = location.name || location.city || 'Unknown Location';
+      document.getElementById('city-name').textContent = name;
+    } else {
+      document.getElementById('city-name').textContent = 'Unknown Location';
+    }
+  } catch (e) {
+    console.error('Error fetching city:', e);
+    document.getElementById('city-name').textContent = 'Location Found';
+  }
+}
+
+
+async function fetchWeather() {
+  const cityEl = document.getElementById('city-name');
+  const conditionEl = document.getElementById('condition-text');
+
+  // Show loading
+  cityEl.textContent = 'Locating...';
+  conditionEl.textContent = 'Please wait...';
+
+  try {
+    let lat = 40.7128; // Default: New York
     let lon = -74.0060;
+    let usingDefault = false;
 
     const getPosition = () => {
       return new Promise((resolve, reject) => {
         if (!navigator.geolocation) {
-          reject('Geolocation not supported');
+          reject(new Error('Geolocation not supported'));
         } else {
-          navigator.geolocation.getCurrentPosition(resolve, reject);
+          // Timeout after 5 seconds
+          const timeout = setTimeout(() => {
+            reject(new Error('Location timeout'));
+          }, 5000);
+
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              clearTimeout(timeout);
+              resolve(pos);
+            },
+            (err) => {
+              clearTimeout(timeout);
+              reject(err);
+            }
+          );
         }
       });
     };
@@ -96,68 +227,84 @@ async function fetchWeather() {
       lat = position.coords.latitude;
       lon = position.coords.longitude;
     } catch (e) {
-      console.log('Using default location (New York)', e);
+      console.warn('GPS failed or denied, using default:', e);
+      usingDefault = true;
+      // If we could determine the approximate location via IP in a real app, we'd do that here.
+      // For now, defaulting to New York but updating UI to reflect that.
     }
 
-    // Fetching data from Open-Meteo
-    // Parameters:
-    // current: temperature_2m, weather_code
-    // hourly: temperature_2m, weather_code
-    // daily: weather_code, temperature_2m_max, temperature_2m_min, precipitation_probability_max
-    // timezone: auto
-    // forecasting_days: 10 (today + 9 days)
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=10`;
+    // Fetch City Name
+    cityEl.textContent = 'Fetching city...';
+    await fetchCity(lat, lon); // fetchCity updates the DOM directly
+
+    // Fetch Weather
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,is_day&hourly=temperature_2m,weather_code,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=10`;
 
     const response = await fetch(url);
     const data = await response.json();
+    weatherData = data; // Store data globally
     renderWeather(data);
+
+    if (usingDefault) {
+      // Optional: Notify user we are using default location
+      // But for now, we just show the city name of the default location (New York)
+      console.log('Displayed default location weather');
+    }
 
   } catch (error) {
     console.error('Error fetching weather:', error);
-    document.getElementById('condition-text').textContent = 'Error loading data';
+    conditionEl.textContent = 'Error loading data';
+    cityEl.textContent = 'Error';
   }
 }
 
+
 function renderWeather(data) {
-  // Current Weather
   const current = data.current;
-  const dailyToday = data.daily; // Arrays of data
+  const dailyToday = data.daily;
 
-  document.getElementById('current-temp').textContent = Math.round(current.temperature_2m);
+  console.log('Weather Data:', data);
+
+  // Update Background & Clouds
+  updateBackground(current.weather_code, current.is_day);
+  // Re-init clouds if not rain (rain adds its own, but we want clouds always)
+  if (!(current.weather_code <= 67 && current.weather_code >= 51) && !(current.weather_code >= 80)) {
+    addClouds(5);
+  }
+
+  document.getElementById('current-temp').textContent = getTemp(current.temperature_2m);
+  // Update degree symbol in display if needed, but usually just number changes and symbol stays
+  // However, usually "C" or "F" isn't explicitly shown next to big number in some designs, but here we have a degree symbol. 
+  // Let's assume just updating the number is enough as the toggle shows the unit.
+
   document.getElementById('condition-text').textContent = getWeatherDescription(current.weather_code);
-  
-  // Today's High/Low (Index 0)
-  document.getElementById('temp-max').textContent = Math.round(dailyToday.temperature_2m_max[0]);
-  document.getElementById('temp-min').textContent = Math.round(dailyToday.temperature_2m_min[0]);
 
-  // Weather Alert (Mocking if no separate API for alerts is used, but implementation placeholder)
-  // Open-Meteo doesn't provide alerts in the free tier easily without another endpoint. 
-  // We'll leave it hidden unless we want to simulate one.
-  // Example simulation:
-  if (current.weather_code >= 95) { // Thunderstorm
+  document.getElementById('temp-max').textContent = getTemp(dailyToday.temperature_2m_max[0]);
+  document.getElementById('temp-min').textContent = getTemp(dailyToday.temperature_2m_min[0]);
+
+  if (current.weather_code >= 95) {
     const alertEl = document.getElementById('weather-alert');
     alertEl.classList.remove('hidden');
     document.getElementById('alert-message').textContent = 'Severe Thunderstorm Warning';
   }
 
-  // Hourly Forecast (Next 24 hours or just display a set amount)
+  // Hourly
   const hourlyContainer = document.getElementById('hourly-container');
   hourlyContainer.innerHTML = '';
-  
-  // Display next 24 hours
+
   const currentHourIndex = new Date().getHours();
-  // We need to find the index in the hourly array that matches next hour
-  // Open-Meteo returns hourly data starting from 00:00 today.
-  
-  for (let i = currentHourIndex; i < currentHourIndex + 24; i++) {
+  let startIndex = currentHourIndex;
+
+  for (let i = startIndex; i < startIndex + 24; i++) {
     if (!data.hourly.time[i]) break;
-    
+
     const timeStr = data.hourly.time[i];
     const date = parseISO(timeStr);
-    const hourFormatted = format(date, 'h a'); // e.g., 2 PM
-    const temp = Math.round(data.hourly.temperature_2m[i]);
-    const iconName = getWeatherIcon(data.hourly.weather_code[i]);
-    
+    const hourFormatted = format(date, 'h a');
+    const temp = getTemp(data.hourly.temperature_2m[i]);
+    const isDayHourly = data.hourly.is_day[i];
+    const iconName = getWeatherIcon(data.hourly.weather_code[i], isDayHourly);
+
     const el = document.createElement('div');
     el.className = 'hourly-item';
     el.innerHTML = `
@@ -168,24 +315,21 @@ function renderWeather(data) {
     hourlyContainer.appendChild(el);
   }
 
-  // 9-Day Forecast (starting from tomorrow, so index 1 to 9)
+  // Daily
   const dailyContainer = document.getElementById('daily-container');
   dailyContainer.innerHTML = '';
 
   for (let i = 1; i < 10; i++) {
-    if (!data.daily.time[i]) break; // Safety check
+    if (!data.daily.time[i]) break;
 
     const dateStr = data.daily.time[i];
-    // Need to fix timezone issue when parsing ISO date for daily only (it's YYYY-MM-DD)
-    // We can just append T00:00 to ensure local parsing or split it.
-    // However, parseISO works well.
-    const date = parseISO(dateStr); 
-    const dayName = format(date, 'EEE'); // Mon, Tue...
-    
-    const min = Math.round(data.daily.temperature_2m_min[i]);
-    const max = Math.round(data.daily.temperature_2m_max[i]);
+    const date = parseISO(dateStr);
+    const dayName = format(date, 'EEE');
+
+    const min = getTemp(data.daily.temperature_2m_min[i]);
+    const max = getTemp(data.daily.temperature_2m_max[i]);
     const precipProb = data.daily.precipitation_probability_max[i];
-    const iconName = getWeatherIcon(data.daily.weather_code[i]);
+    const iconName = getWeatherIcon(data.daily.weather_code[i], 1);
 
     const el = document.createElement('div');
     el.className = 'daily-item';
@@ -203,9 +347,8 @@ function renderWeather(data) {
     dailyContainer.appendChild(el);
   }
 
-  // Re-initialize icons for new elements
   initIcons();
 }
 
-// Initial fetch
 fetchWeather();
+

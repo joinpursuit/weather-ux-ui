@@ -1,57 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Weather UX</title>
-    <link rel="stylesheet" href="style.css" />
-    <!-- Preconnect to Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div id="app">
-      <div class="weather-container">
-        <!-- Current Weather Section -->
-        <section class="current-weather">
-          <div class="temp-display">
-            <span id="current-temp" class="temp-value">--</span>
-            <span class="degree">°</span>
-          </div>
-          <div class="weather-status">
-            <h2 id="condition-text">Loading...</h2>
-            <div class="high-low">
-              <span>H: <span id="temp-max">--</span>°</span>
-              <span>L: <span id="temp-min">--</span>°</span>
-            </div>
-          </div>
-        </section>
 
-        <!-- Weather Alert Section (Hidden by default) -->
-        <div id="weather-alert" class="weather-alert hidden">
-          <i data-lucide="alert-triangle"></i>
-          <span id="alert-message"></span>
-        </div>
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weather UX</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Preconnect to Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
 
-        <!-- Hourly Forecast Section -->
-        <section class="hourly-forecast">
-          <h3>Hourly Forecast</h3>
-          <div class="hourly-scroll" id="hourly-container">
-            <!-- Hourly items will be injected here -->
-          </div>
-        </section>
-
-        <!-- 9-Day Forecast Section -->
-        <section class="daily-forecast">
-          <h3>9-Day Forecast</h3>
-          <div class="daily-list" id="daily-container">
-            <!-- Daily items will be injected here -->
-          </div>
-        </section>
+<body>
+  <div id="app">
+    <div id="cloud-container" class="cloud-container"></div>
+    <div class="weather-container">
+      <!-- Unit Toggle -->
+      <div class="unit-toggle">
+        <button id="btn-c" class="unit-btn active">°C</button>
+        <button id="btn-f" class="unit-btn">°F</button>
       </div>
+
+      <!-- Current Weather Section -->
+
+      <section class="current-weather">
+        <h1 id="city-name" class="city-name">Loading...</h1>
+        <div class="temp-display">
+          <span id="current-temp" class="temp-value">--</span>
+          <span class="degree">°</span>
+        </div>
+        <div class="weather-status">
+          <h2 id="condition-text">Loading...</h2>
+          <div class="high-low">
+            <span>H: <span id="temp-max">--</span>°</span>
+            <span>L: <span id="temp-min">--</span>°</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Weather Alert Section (Hidden by default) -->
+      <div id="weather-alert" class="weather-alert hidden">
+        <i data-lucide="alert-triangle"></i>
+        <span id="alert-message"></span>
+      </div>
+
+      <!-- Hourly Forecast Section -->
+      <section class="hourly-forecast">
+        <h3>Hourly Forecast</h3>
+        <div class="hourly-scroll" id="hourly-container">
+          <!-- Hourly items will be injected here -->
+        </div>
+      </section>
+
+      <!-- 9-Day Forecast Section -->
+      <section class="daily-forecast">
+        <h3>9-Day Forecast</h3>
+        <div class="daily-list" id="daily-container">
+          <!-- Daily items will be injected here -->
+        </div>
+      </section>
     </div>
-    <script type="module" src="/app.js"></script>
-  </body>
+  </div>
+  <script type="module" src="/app.js"></script>
+</body>
+
 </html>
