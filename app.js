@@ -157,6 +157,15 @@ document.getElementById('btn-c').addEventListener('click', () => {
   }
 });
 
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById('time-display').textContent = format(now, 'h:mm a');
+}
+
+setInterval(updateClock, 1000);
+updateClock(); // Initial call
+
 document.getElementById('btn-f').addEventListener('click', () => {
   if (currentUnit !== 'F') {
     currentUnit = 'F';
