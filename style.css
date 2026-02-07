@@ -90,7 +90,7 @@ body.bg-night {
 #app {
   width: 100%;
   max-width: 480px;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.2);
   /* Slightly more transparent for dynamic bg visibility */
 
   backdrop-filter: blur(20px);
@@ -207,15 +207,15 @@ body.bg-night {
 }
 
 .temp-value {
-  font-size: 75px;
-  font-weight: 700;
+  font-size: 105px;
+  font-weight: 300;
   line-height: 1;
 }
 
 .city-name {
-  font-size: 24px;
-  font-weight: 600;
-  margin-bottom: 5px;
+  font-size: 20px;
+  font-weight: 400;
+  margin-bottom: 2px;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -229,18 +229,18 @@ body.bg-night {
 }
 
 .weather-status h2 {
-  font-size: 22.4px;
+  font-size: 20.4px;
   font-weight: 400;
-  margin-bottom: 5px;
+  margin-bottom: 2px;
   text-transform: capitalize;
 }
 
 .high-low {
-  font-size: 16px;
+  font-size: 20px;
   color: var(--text-secondary);
   display: flex;
   justify-content: center;
-  gap: 15px;
+  gap: 25px;
 }
 
 /* Weather Alert */
@@ -270,7 +270,7 @@ body.bg-night {
 .daily-forecast h3 {
   font-size: 14px;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 3px;
   color: var(--text-secondary);
   margin-bottom: 15px;
   border-bottom: 1px solid var(--glass-border);
@@ -292,13 +292,13 @@ body.bg-night {
 }
 
 .hourly-item {
-  min-width: 60px;
+  min-width: 50px;
   display: flex;
   flex-direction: column;
   align-items: center;
   background: rgba(255, 255, 255, 0.05);
-  padding: 11px;
-  border-radius: 15px;
+  padding: 2px;
+  border-radius: 12px;
   border: 1px solid var(--glass-border);
 }
 
@@ -306,11 +306,12 @@ body.bg-night {
   font-size: 12px;
   margin-bottom: 5px;
   color: var(--text-secondary);
+  font-weight: 600;
 }
 
 .hourly-temp {
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 600;
   margin-top: 5px;
 }
 
@@ -338,7 +339,7 @@ body.bg-night {
 }
 
 .day-name {
-  width: 50px;
+  width: 70px;
   font-weight: 600;
 }
 
@@ -359,7 +360,7 @@ body.bg-night {
 .daily-temps {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 20px;
   min-width: 80px;
   justify-content: flex-end;
 }
