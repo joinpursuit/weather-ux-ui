@@ -181,21 +181,21 @@ async function fetchCity(lat, lon) {
     const data = await res.json();
     if (data.results && data.results.length > 0) {
       const location = data.results[0];
-      // Prefer city, then town, then village, then just name
-      const name = location.name || location.city || 'Unknown Location';
-      document.getElementById('city-name').textContent = name;
+      // Prefer name, then city, then town, then administrative area
+      const name = location.name || location.city || location.town || location.village || 'Unknown Location';
+      document.querySelector('.city-name').textContent = name;
     } else {
-      document.getElementById('city-name').textContent = 'Unknown Location';
+      document.querySelector('.city-name').textContent = 'Unknown Location';
     }
   } catch (e) {
     console.error('Error fetching city:', e);
-    document.getElementById('city-name').textContent = 'Location Found';
+    document.querySelector('.city-name').textContent = 'Location Found';
   }
 }
 
 
 async function fetchWeather() {
-  const cityEl = document.getElementById('city-name');
+  const cityEl = document.querySelector('.city-name');
   const conditionEl = document.getElementById('condition-text');
 
   // Show loading
