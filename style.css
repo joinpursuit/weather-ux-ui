@@ -359,7 +359,7 @@ body.bg-night {
 .daily-temps {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 26px; /* increased 30% from 20px to 26px for more spacing */
   min-width: 80px;
   justify-content: flex-end;
 }
