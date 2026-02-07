@@ -176,20 +176,42 @@ document.getElementById('btn-f').addEventListener('click', () => {
 
 async function fetchCity(lat, lon) {
   try {
-    const url = `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&count=1&language=en&format=json`;
-    const res = await fetch(url);
+    // Use Nominatim (OpenStreetMap) - has better CORS support than Open-Meteo geocoding
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`;
+    
+    const res = await fetch(url, {
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+    
+    if (!res.ok) {
+      throw new Error(`API response status: ${res.status}`);
+    }
+    
     const data = await res.json();
-    if (data.results && data.results.length > 0) {
-      const location = data.results[0];
-      // Prefer name, then city, then town, then administrative area
-      const name = location.name || location.city || location.town || location.village || 'Unknown Location';
-      document.querySelector('.city-name').textContent = name;
+    console.log('Nominatim response:', data);
+    
+    if (data.address) {
+      // Try to get city name from various properties
+      const address = data.address;
+      const cityName = 
+        address.city || 
+        address.town || 
+        address.village || 
+        address.county || 
+        address.state || 
+        'Unknown Location';
+      
+      console.log('City name fetched:', cityName);
+      document.querySelector('.city-name').textContent = cityName;
     } else {
+      console.warn('No address in nominatim response');
       document.querySelector('.city-name').textContent = 'Unknown Location';
     }
   } catch (e) {
     console.error('Error fetching city:', e);
-    document.querySelector('.city-name').textContent = 'Location Found';
+    document.querySelector('.city-name').textContent = 'Unable to Load City';
   }
 }
 
